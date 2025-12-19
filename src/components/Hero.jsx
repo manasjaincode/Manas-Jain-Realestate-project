@@ -1,5 +1,6 @@
 import { Send } from 'lucide-react';
 import { useState } from 'react';
+import { client } from '../client'; // Client import check kar lena
 
 function Hero() {
   const [formData, setFormData] = useState({
@@ -9,10 +10,27 @@ function Hero() {
     area: ''
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => { // async banaya
     e.preventDefault();
-    alert('Thank you! We will contact you soon.');
-    setFormData({ fullName: '', email: '', mobile: '', area: '' });
+
+    // Sanity Document mapping
+    const doc = {
+      _type: 'inquiry', // Jo schema mein name rakha tha
+      fullName: formData.fullName,
+      email: formData.email,
+      phone: formData.mobile, // Mapping mobile to phone
+      city: formData.area,    // Mapping area to city
+    };
+
+    try {
+      // Data Sanity mein bheja
+      await client.create(doc);
+      alert('Thank you! Your inquiry has been saved in Sanity. 🚀');
+      setFormData({ fullName: '', email: '', mobile: '', area: '' });
+    } catch (err) {
+      console.error('Lafda ho gaya:', err);
+      alert('Form submit nahi hua. Token check karo!');
+    }
   };
 
   const handleChange = (e) => {

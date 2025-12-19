@@ -1,13 +1,31 @@
 import { Mail } from 'lucide-react';
 import { useState } from 'react';
+import { client } from '../client'; // Sanity client import karna mat bhulna
 
 function Newsletter() {
   const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Thank you for subscribing!');
-    setEmail('');
+    setIsSubmitting(true);
+
+    try {
+      // Sanity mein newsletter document create karna
+      await client.create({
+        _type: 'newsletter',
+        email: email,
+        subscribedAt: new Date().toISOString(),
+      });
+
+      alert('Shabaash! Thank you for subscribing! ✅');
+      setEmail('');
+    } catch (err) {
+      console.error('Subscription error:', err);
+      alert('Kuch gadbad ho gayi. Check terminal!');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -34,12 +52,16 @@ function Newsletter() {
               required
               placeholder="Enter your email address"
               className="flex-1 px-6 py-4 rounded-lg text-gray-800 focus:outline-none focus:ring-4 focus:ring-blue-300 text-lg"
+              disabled={isSubmitting}
             />
             <button
               type="submit"
-              className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all transform hover:scale-105 shadow-lg whitespace-nowrap"
+              disabled={isSubmitting}
+              className={`${
+                isSubmitting ? 'bg-gray-400' : 'bg-orange-500 hover:bg-orange-600'
+              } text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all transform hover:scale-105 shadow-lg whitespace-nowrap`}
             >
-              Subscribe
+              {isSubmitting ? 'Processing...' : 'Subscribe'}
             </button>
           </div>
           <p className="text-blue-100 text-sm mt-4 text-center">
